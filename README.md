@@ -35,7 +35,7 @@ Pre-configured dashboards for:
 
 ## Quick Start
 
-For detailed architecture and design specifications, refer to the project design documentation.
+For detailed architecture and design specifications, refer to `docs/superpowers/specs/2026-04-18-ai-sre-observability-design.md`.
 
 ## Development
 
