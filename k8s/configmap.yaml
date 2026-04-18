@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ai-sre-observability-config
+  namespace: default
+data:
+  pricing.yaml: |
+    models:
+      - provider: openai
+        model: gpt-4o
+        input_price_per_million: 2.50
+        output_price_per_million: 10.00
+      - provider: openai
+        model: gpt-4o-mini
+        input_price_per_million: 0.15
+        output_price_per_million: 0.60
+      - provider: deepseek
+        model: deepseek-chat
+        input_price_per_million: 0.14
+        output_price_per_million: 0.28
