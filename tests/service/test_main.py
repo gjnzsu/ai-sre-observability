@@ -64,7 +64,7 @@ def test_health_endpoint(client):
     assert isinstance(data["metrics_received_last_minute"], int)
 
     # Check values
-    assert data["status"] in ["healthy", "unhealthy"]
+    assert data["status"] == "ok"
     assert data["metrics_received_last_minute"] >= 0
 
 

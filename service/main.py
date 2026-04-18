@@ -90,7 +90,7 @@ async def health_check():
     tracked_services = list(metrics_registry.get_tracked_services().keys())
 
     return HealthResponse(
-        status="healthy",
+        status="ok",
         services_tracked=tracked_services,
         metrics_received_last_minute=metrics_received_count
     )
