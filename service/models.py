@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from datetime import datetime
-from typing import Union, Optional, List
+from typing import Union, Optional, Dict
 
 
 class LLMCallData(BaseModel):
@@ -26,7 +26,7 @@ class BusinessMetricData(BaseModel):
     """Business metrics"""
     metric_name: str = Field(..., description="Name of the business metric")
     value: float = Field(..., description="Metric value")
-    labels: Optional[dict] = Field(None, description="Additional labels for the metric")
+    labels: Dict[str, str] = Field(default_factory=dict, description="Additional labels for the metric")
 
 
 class MetricIngestRequest(BaseModel):
@@ -47,7 +47,7 @@ class MetricIngestResponse(BaseModel):
 class HealthResponse(BaseModel):
     """Health check response"""
     status: str = Field(..., description="Health status (healthy, unhealthy)")
-    services_tracked: int = Field(..., ge=0, description="Number of services being tracked")
+    services_tracked: list[str] = Field(default_factory=list, description="List of service names being tracked")
     metrics_received_last_minute: int = Field(..., ge=0, description="Number of metrics received in the last minute")
 
 
@@ -60,4 +60,4 @@ class ServiceInfo(BaseModel):
 
 class ServicesResponse(BaseModel):
     """Services list response"""
-    services: List[ServiceInfo] = Field(..., description="List of tracked services")
+    services: list[ServiceInfo] = Field(default_factory=list, description="List of tracked services")
