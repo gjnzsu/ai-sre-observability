@@ -10,14 +10,14 @@ def cost_calculator():
     pricing = {
         "openai": {
             "gpt-4o": {
-                "prompt": 0.000005,
-                "completion": 0.000015
+                "prompt": 0.005,
+                "completion": 0.015
             }
         },
         "deepseek": {
             "deepseek-chat": {
-                "prompt": 0.00000014,
-                "completion": 0.00000028
+                "prompt": 0.00014,
+                "completion": 0.00028
             }
         }
     }

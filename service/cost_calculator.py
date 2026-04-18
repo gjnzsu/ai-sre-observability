@@ -52,7 +52,7 @@ class CostCalculator:
             return 0.0
 
         model_pricing = self.pricing[provider][model]
-        prompt_cost = (prompt_tokens / 1_000) * model_pricing["prompt"]
-        completion_cost = (completion_tokens / 1_000) * model_pricing["completion"]
+        prompt_cost = (prompt_tokens / 1_000_000) * model_pricing["prompt"]
+        completion_cost = (completion_tokens / 1_000_000) * model_pricing["completion"]
 
         return prompt_cost + completion_cost
