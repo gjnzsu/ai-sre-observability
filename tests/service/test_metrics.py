@@ -10,9 +10,10 @@ def test_track_llm_request():
 
     # Track a request
     registry.track_llm_request(
-        service="openai",
+        service="chat-api",
+        provider="openai",
         model="gpt-4",
-        operation="chat_completion"
+        status="success"
     )
 
     # Verify the counter was incremented
@@ -22,9 +23,10 @@ def test_track_llm_request():
     # Find the sample with our labels
     found = False
     for sample in samples:
-        if (sample.labels.get('service') == 'openai' and
+        if (sample.labels.get('service') == 'chat-api' and
+            sample.labels.get('provider') == 'openai' and
             sample.labels.get('model') == 'gpt-4' and
-            sample.labels.get('operation') == 'chat_completion'):
+            sample.labels.get('status') == 'success'):
             assert sample.value == 1.0
             found = True
             break
@@ -38,7 +40,8 @@ def test_track_llm_tokens():
 
     # Track tokens
     registry.track_llm_tokens(
-        service="openai",
+        service="chat-api",
+        provider="openai",
         model="gpt-4",
         token_type="prompt",
         count=100
@@ -51,7 +54,8 @@ def test_track_llm_tokens():
     # Find the sample with our labels
     found = False
     for sample in samples:
-        if (sample.labels.get('service') == 'openai' and
+        if (sample.labels.get('service') == 'chat-api' and
+            sample.labels.get('provider') == 'openai' and
             sample.labels.get('model') == 'gpt-4' and
             sample.labels.get('token_type') == 'prompt'):
             assert sample.value == 100.0
@@ -67,7 +71,8 @@ def test_track_llm_cost():
 
     # Track cost
     registry.track_llm_cost(
-        service="openai",
+        service="chat-api",
+        provider="openai",
         model="gpt-4",
         cost_usd=0.05
     )
@@ -79,10 +84,12 @@ def test_track_llm_cost():
     # Find the sample with our labels
     found = False
     for sample in samples:
-        if (sample.labels.get('service') == 'openai' and
+        if (sample.labels.get('service') == 'chat-api' and
+            sample.labels.get('provider') == 'openai' and
             sample.labels.get('model') == 'gpt-4'):
             assert sample.value == 0.05
             found = True
             break
 
     assert found, "Expected metric sample not found"
+

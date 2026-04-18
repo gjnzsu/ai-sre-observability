@@ -16,35 +16,36 @@ class MetricsRegistry:
         self.llm_requests_total = Counter(
             'llm_requests_total',
             'Total number of LLM API requests',
-            ['service', 'model', 'operation'],
+            ['service', 'provider', 'model', 'status'],
             registry=self.registry
         )
 
         self.llm_tokens_total = Counter(
             'llm_tokens_total',
             'Total number of tokens processed',
-            ['service', 'model', 'token_type'],
+            ['service', 'provider', 'model', 'token_type'],
             registry=self.registry
         )
 
         self.llm_cost_usd_total = Counter(
             'llm_cost_usd_total',
             'Total cost in USD for LLM requests',
-            ['service', 'model'],
+            ['service', 'provider', 'model'],
             registry=self.registry
         )
 
         self.llm_request_duration_seconds = Histogram(
             'llm_request_duration_seconds',
             'Duration of LLM requests in seconds',
-            ['service', 'model', 'operation'],
+            ['service', 'provider', 'model'],
+            buckets=[0.5, 1.0, 2.0, 5.0, 10.0, 30.0],
             registry=self.registry
         )
 
         self.llm_errors_total = Counter(
             'llm_errors_total',
             'Total number of LLM errors',
-            ['service', 'model', 'error_type'],
+            ['service', 'provider', 'model', 'error_type'],
             registry=self.registry
         )
 
@@ -52,21 +53,22 @@ class MetricsRegistry:
         self.http_requests_total = Counter(
             'http_requests_total',
             'Total number of HTTP requests',
-            ['method', 'endpoint', 'status'],
+            ['service', 'endpoint', 'method', 'status_code'],
             registry=self.registry
         )
 
         self.http_request_duration_seconds = Histogram(
             'http_request_duration_seconds',
             'Duration of HTTP requests in seconds',
-            ['method', 'endpoint'],
+            ['service', 'endpoint', 'method'],
+            buckets=[0.1, 0.5, 1.0, 2.0, 5.0, 10.0],
             registry=self.registry
         )
 
         self.http_requests_in_flight = Gauge(
             'http_requests_in_flight',
             'Number of HTTP requests currently being processed',
-            ['method', 'endpoint'],
+            ['service'],
             registry=self.registry
         )
 
@@ -82,103 +84,115 @@ class MetricsRegistry:
         self._services: Dict[str, Dict[str, Any]] = {}
 
     # LLM Tracking Methods
-    def track_llm_request(self, service: str, model: str, operation: str) -> None:
+    def track_llm_request(self, service: str, provider: str, model: str, status: str) -> None:
         """Track an LLM request.
 
         Args:
-            service: LLM service name (e.g., 'openai', 'anthropic')
+            service: Service name (e.g., 'chat-api', 'embedding-service')
+            provider: LLM provider (e.g., 'openai', 'anthropic')
             model: Model name (e.g., 'gpt-4', 'claude-3')
-            operation: Operation type (e.g., 'chat_completion', 'embedding')
+            status: Request status (e.g., 'success', 'error')
         """
         self.llm_requests_total.labels(
             service=service,
+            provider=provider,
             model=model,
-            operation=operation
+            status=status
         ).inc()
 
-    def track_llm_tokens(self, service: str, model: str, token_type: str, count: int) -> None:
+    def track_llm_tokens(self, service: str, provider: str, model: str, token_type: str, count: int) -> None:
         """Track LLM token usage.
 
         Args:
-            service: LLM service name
+            service: Service name
+            provider: LLM provider
             model: Model name
             token_type: Type of tokens ('prompt', 'completion', 'total')
             count: Number of tokens
         """
         self.llm_tokens_total.labels(
             service=service,
+            provider=provider,
             model=model,
             token_type=token_type
         ).inc(count)
 
-    def track_llm_cost(self, service: str, model: str, cost_usd: float) -> None:
+    def track_llm_cost(self, service: str, provider: str, model: str, cost_usd: float) -> None:
         """Track LLM cost.
 
         Args:
-            service: LLM service name
+            service: Service name
+            provider: LLM provider
             model: Model name
             cost_usd: Cost in USD
         """
         self.llm_cost_usd_total.labels(
             service=service,
+            provider=provider,
             model=model
         ).inc(cost_usd)
 
-    def track_llm_duration(self, service: str, model: str, operation: str, duration: float) -> None:
+    def track_llm_duration(self, service: str, provider: str, model: str, duration: float) -> None:
         """Track LLM request duration.
 
         Args:
-            service: LLM service name
+            service: Service name
+            provider: LLM provider
             model: Model name
-            operation: Operation type
             duration: Duration in seconds
         """
         self.llm_request_duration_seconds.labels(
             service=service,
-            model=model,
-            operation=operation
+            provider=provider,
+            model=model
         ).observe(duration)
 
-    def track_llm_error(self, service: str, model: str, error_type: str) -> None:
+    def track_llm_error(self, service: str, provider: str, model: str, error_type: str) -> None:
         """Track LLM error.
 
         Args:
-            service: LLM service name
+            service: Service name
+            provider: LLM provider
             model: Model name
             error_type: Type of error (e.g., 'rate_limit', 'timeout', 'invalid_request')
         """
         self.llm_errors_total.labels(
             service=service,
+            provider=provider,
             model=model,
             error_type=error_type
         ).inc()
 
     # HTTP Tracking Methods
-    def track_http_request(self, method: str, endpoint: str, status: int) -> None:
+    def track_http_request(self, service: str, endpoint: str, method: str, status_code: int) -> None:
         """Track an HTTP request.
 
         Args:
-            method: HTTP method (e.g., 'GET', 'POST')
+            service: Service name
             endpoint: API endpoint
-            status: HTTP status code
+            method: HTTP method (e.g., 'GET', 'POST')
+            status_code: HTTP status code
         """
         self.http_requests_total.labels(
-            method=method,
+            service=service,
             endpoint=endpoint,
-            status=str(status)
+            method=method,
+            status_code=str(status_code)
         ).inc()
 
-    def track_http_duration(self, method: str, endpoint: str, duration: float) -> None:
+    def track_http_duration(self, service: str, endpoint: str, method: str, duration: float) -> None:
         """Track HTTP request duration.
 
         Args:
-            method: HTTP method
+            service: Service name
             endpoint: API endpoint
+            method: HTTP method
             duration: Duration in seconds
         """
         self.http_request_duration_seconds.labels(
-            method=method,
-            endpoint=endpoint
+            service=service,
+            endpoint=endpoint,
+            method=method
         ).observe(duration)
 
     # System Health Methods
