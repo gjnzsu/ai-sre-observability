@@ -1,0 +1,203 @@
+<mxfile host="65bd71144e">
+    <diagram id="qOh5U13tjh9zXVIzlkVb" name="Page-1">
+        <mxGraphModel dx="612" dy="571" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0" adaptiveColors="auto">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="title" value="AI SRE Observability Platform Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="200" y="20" width="600" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="layer1_label" value="Client Layer" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#666666" parent="1" vertex="1">
+                    <mxGeometry x="40" y="80" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="service1" value="Service A&#xa;(Python/Node/Go)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12" parent="1" vertex="1">
+                    <mxGeometry x="200" y="80" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="service2" value="Service B&#xa;(Python/Node/Go)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12" parent="1" vertex="1">
+                    <mxGeometry x="380" y="80" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="service3" value="Service C&#xa;(Python/Node/Go)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12" parent="1" vertex="1">
+                    <mxGeometry x="560" y="80" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="layer2_label" value="SDK Layer" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#666666" parent="1" vertex="1">
+                    <mxGeometry x="40" y="200" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="sdk_container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;dashed=1;dashPattern=8 8" parent="1" vertex="1">
+                    <mxGeometry x="180" y="190" width="540" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="sdk_label" value="AI SRE Observability SDK" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="180" y="195" width="200" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="decorator" value="@track_llm_call&#xa;Decorator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11" parent="1" vertex="1">
+                    <mxGeometry x="210" y="235" width="130" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="client" value="ObservabilityClient&#xa;(Batching)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11" parent="1" vertex="1">
+                    <mxGeometry x="370" y="235" width="130" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="transport" value="Async Transport&#xa;(httpx)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=11" parent="1" vertex="1">
+                    <mxGeometry x="530" y="235" width="130" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge1" parent="1" source="service1" target="decorator" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge2" parent="1" source="service2" target="client" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge3" parent="1" source="service3" target="transport" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge4" value="uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=10;fontColor=#666666" parent="1" source="decorator" target="client" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge5" value="sends via" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=10;fontColor=#666666" parent="1" source="client" target="transport" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="layer3_label" value="Service Layer" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#666666" parent="1" vertex="1">
+                    <mxGeometry x="40" y="400" width="120" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="service_container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;dashed=1;dashPattern=8 8" parent="1" vertex="1">
+                    <mxGeometry x="180" y="390" width="540" height="220" as="geometry"/>
+                </mxCell>
+                <mxCell id="service_label" value="Observability Service (FastAPI)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="180" y="395" width="240" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="endpoints" value="/health&#xa;/metrics&#xa;/ingest&#xa;/services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;align=left;spacingLeft=10" parent="1" vertex="1">
+                    <mxGeometry x="210" y="435" width="100" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="cost_calc" value="Cost&#xa;Calculator" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11" parent="1" vertex="1">
+                    <mxGeometry x="340" y="435" width="100" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="metrics_reg" value="Metrics&#xa;Registry" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11" parent="1" vertex="1">
+                    <mxGeometry x="470" y="435" width="100" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="config_loader" value="Config&#xa;Loader" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11" parent="1" vertex="1">
+                    <mxGeometry x="600" y="435" width="100" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="pricing_config" value="Pricing Config&#xa;(ConfigMap)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=10;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10" parent="1" vertex="1">
+                    <mxGeometry x="610" y="525" width="80" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge6" value="HTTP POST" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=10;fontColor=#666666" parent="1" source="transport" target="endpoints" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="595" y="360"/>
+                            <mxPoint x="260" y="360"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;dashed=1" parent="1" source="endpoints" target="cost_calc" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;dashed=1" parent="1" source="endpoints" target="metrics_reg" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge9" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;dashed=1" parent="1" source="endpoints" target="config_loader" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0" parent="1" source="config_loader" target="pricing_config" edge="1">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                <mxCell id="layer4_label" value="Monitoring Layer" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#666666" parent="1" vertex="1">
+                    <mxGeometry x="40" y="670" width="140" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="prometheus" value="Prometheus&#xa;Metrics Endpoint&#xa;(/metrics)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11" parent="1" vertex="1">
+                    <mxGeometry x="210" y="670" width="140" height="70" as="geometry"/>
+                </mxCell>
+                <mxCell id="grafana_container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;dashed=1;dashPattern=8 8" parent="1" vertex="1">
+                    <mxGeometry x="390" y="660" width="330" height="140" as="geometry"/>
+                </mxCell>
+                <mxCell id="grafana_label" value="Grafana Dashboards" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="390" y="665" width="160" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="dashboard1" value="Service&#xa;Overview" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10" parent="1" vertex="1">
+                    <mxGeometry x="410" y="705" width="85" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="dashboard2" value="LLM Cost&#xa;&amp; Usage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10" parent="1" vertex="1">
+                    <mxGeometry x="515" y="705" width="85" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="dashboard3" value="Request&#xa;Tracing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10" parent="1" vertex="1">
+                    <mxGeometry x="620" y="705" width="85" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge11" value="exposes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=10;fontColor=#666666" parent="1" source="metrics_reg" target="prometheus" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="520" y="640"/>
+                            <mxPoint x="280" y="640"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge12" value="scrapes" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=10;fontColor=#666666" parent="1" source="prometheus" target="dashboard1" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="360" y="705"/>
+                            <mxPoint x="360" y="735"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;dashed=1" parent="1" source="prometheus" target="dashboard2" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="360" y="705"/>
+                            <mxPoint x="360" y="735"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="edge14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;dashed=1" parent="1" source="prometheus" target="dashboard3" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="360" y="705"/>
+                            <mxPoint x="360" y="735"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="layer5_label" value="Infrastructure" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#666666" parent="1" vertex="1">
+                    <mxGeometry x="40" y="850" width="140" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="k8s_container" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;dashed=1;dashPattern=8 8" parent="1" vertex="1">
+                    <mxGeometry x="180" y="840" width="540" height="100" as="geometry"/>
+                </mxCell>
+                <mxCell id="k8s_label" value="Kubernetes / GKE Deployment" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=13;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="180" y="845" width="240" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="deployment" value="Deployment&#xa;(1 replica)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11" parent="1" vertex="1">
+                    <mxGeometry x="210" y="885" width="110" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="k8s_service" value="Service&#xa;(ClusterIP)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11" parent="1" vertex="1">
+                    <mxGeometry x="350" y="885" width="110" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="configmap" value="ConfigMap&#xa;(Pricing)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11" parent="1" vertex="1">
+                    <mxGeometry x="490" y="885" width="110" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="gke" value="GKE Cluster&#xa;gen-lang-client-0896070179" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10" parent="1" vertex="1">
+                    <mxGeometry x="630" y="885" width="80" height="45" as="geometry"/>
+                </mxCell>
+                <mxCell id="edge15" value="deployed on" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fontSize=10;fontColor=#666666;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="service_container" target="deployment" edge="1">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="170" y="500"/>
+                            <mxPoint x="170" y="780"/>
+                            <mxPoint x="265" y="780"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="legend" value="Legend" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=12;fontStyle=1" parent="1" vertex="1">
+                    <mxGeometry x="780" y="80" width="60" height="25" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend1" value="Client Services" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=10" parent="1" vertex="1">
+                    <mxGeometry x="780" y="110" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend2" value="SDK Components" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10" parent="1" vertex="1">
+                    <mxGeometry x="780" y="150" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend3" value="Service Layer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10" parent="1" vertex="1">
+                    <mxGeometry x="780" y="190" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend4" value="Internal Logic" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10" parent="1" vertex="1">
+                    <mxGeometry x="780" y="230" width="100" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="legend5" value="Monitoring" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10" parent="1" vertex="1">
+                    <mxGeometry x="780" y="270" width="100" height="30" as="geometry"/>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
