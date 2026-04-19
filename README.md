@@ -10,6 +10,19 @@ This platform enables comprehensive monitoring of AI services through:
 - Real-time performance tracking
 - Grafana-based visualization dashboards
 
+## Architecture
+
+![AI SRE Observability Platform Architecture](docs/architecture/ai-sre-observability-architecture.png)
+
+*[View/Edit Diagram](docs/architecture/ai-sre-observability-architecture.drawio)*
+
+The platform consists of five main layers:
+1. **Client Layer** - Services instrumented with the SDK
+2. **SDK Layer** - `@track_llm_call` decorator, batching client, async transport
+3. **Service Layer** - FastAPI service with cost calculator, metrics registry, config loader
+4. **Monitoring Layer** - Prometheus metrics exposure and Grafana dashboards
+5. **Infrastructure** - Kubernetes/GKE deployment
+
 ## Components
 
 ### Observability Service
@@ -18,20 +31,21 @@ FastAPI-based service that:
 - Exposes Prometheus-compatible `/metrics` endpoint
 - Provides health check and status endpoints
 - Handles metric validation and storage
+- Calculates LLM costs based on token usage
 
 ### SDK Library
 Lightweight Python SDK for instrumenting AI services:
-- Simple API for sending metrics
-- Minimal dependencies
-- Async support with httpx
+- Simple `@track_llm_call` decorator for automatic tracking
+- Async batching client (5s interval)
+- Minimal dependencies (httpx, pydantic)
 - Type-safe metric definitions
+- Graceful degradation on failures
 
 ### Grafana Dashboards
 Pre-configured dashboards for:
-- AI service performance metrics
-- Request latency and throughput
-- Error rates and success rates
-- Custom business metrics
+- **Service Overview** - Health, HTTP metrics, error rates
+- **LLM Cost & Usage** - Cost tracking by provider/model, token usage
+- **Request Tracing** - Latency heatmaps, trace search, success rates
 
 ## Quick Start
 
