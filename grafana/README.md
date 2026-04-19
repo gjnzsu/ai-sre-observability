@@ -22,6 +22,45 @@ Comprehensive dashboard for monitoring service health and performance metrics.
 - `http_request_duration_seconds` - Request duration histogram
 - `http_requests_in_flight` - Current in-flight requests gauge
 
+### LLM Cost & Usage (`llm-cost-usage.json`)
+
+Dashboard for monitoring LLM API costs, usage patterns, and performance metrics.
+
+**Panels:**
+1. **Total LLM Cost** - Cumulative cost across all providers
+2. **Cost by Provider** - Pie chart showing cost distribution
+3. **Cost by Model** - Bar gauge showing per-model costs
+4. **LLM Request Rate** - Request throughput by provider and model
+5. **Token Usage** - Token consumption rate (input/output)
+6. **LLM Request Duration p95** - 95th percentile latency
+7. **LLM Error Rate** - Error rate by provider and error type
+8. **Cost Rate** - Real-time cost accumulation rate
+
+**Metrics Used:**
+- `llm_cost_usd_total` - Total cost counter
+- `llm_requests_total` - Total LLM requests counter
+- `llm_tokens_total` - Token usage counter
+- `llm_request_duration_seconds` - Request duration histogram
+- `llm_errors_total` - Error counter
+
+### Request Tracing (`request-tracing.json`)
+
+Dashboard for distributed tracing and request flow monitoring across services.
+
+**Panels:**
+1. **Request Flow by Service** - Node graph showing service-to-service request flow
+2. **Trace ID Search** - Table for searching and displaying traces by trace_id
+3. **Request Latency by Service** - Heatmap showing latency distribution
+4. **Top Slowest Requests** - Table of top 10 slowest LLM requests with trace details
+5. **Request Success Rate** - Success rate by service over time with alerting
+6. **Concurrent Requests** - Number of concurrent requests per service
+
+**Metrics Used:**
+- `service_requests_total` - Service-to-service request counter
+- `llm_request_duration_seconds` - Request duration with trace_id label
+- `llm_requests_total` - Total requests with status label
+- `llm_requests_in_flight` - Current concurrent requests gauge
+
 ## Setup Instructions
 
 ### 1. Configure Prometheus Data Source
