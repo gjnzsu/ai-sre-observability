@@ -10,6 +10,29 @@ This platform enables comprehensive monitoring of AI services through:
 - Real-time performance tracking
 - Grafana-based visualization dashboards
 
+**Production Status:** ✅ **Deployed and operational** - Currently monitoring AI Market Studio in production on GKE
+
+## Live Deployment
+
+| Component | URL | Status |
+|-----------|-----|--------|
+| **Observability Service** | `http://ai-sre-observability.default.svc.cluster.local:8080` (internal) | ✓ Running |
+| **Prometheus** | http://136.113.33.154:9090 | ✓ Running |
+| **Grafana** | http://136.114.77.0 | ✓ Running |
+
+**Monitored Services:**
+- **ai-market-studio** - FX market data platform (6 metrics tracked, ~$0.0072 per query)
+
+**Metrics Collected:**
+- `llm_requests_total` - Total LLM API requests by service, model, provider, status
+- `llm_tokens_total` - Token usage (prompt, completion, total) by service, model, provider
+- `llm_cost_usd_total` - Cumulative cost in USD by service, model, provider
+- `llm_request_duration_seconds` - Request latency histogram
+
+**Deployment Date:** 2026-04-23
+**GKE Cluster:** helloworld-cluster (us-central1)
+**GCP Project:** gen-lang-client-0896070179
+
 ## Architecture
 
 ![AI SRE Observability Platform Architecture](docs/architecture/ai-sre-observability-architecture.png)
