@@ -46,7 +46,7 @@ class AsyncTransport:
         try:
             client = self._get_client()
             response = await client.post(
-                f"{self.observability_url}/api/v1/metrics",
+                f"{self.observability_url}/ingest",
                 json=metric.model_dump(mode="json"),
             )
             response.raise_for_status()

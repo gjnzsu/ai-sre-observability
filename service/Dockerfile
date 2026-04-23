@@ -12,7 +12,7 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements and install dependencies
-COPY requirements.txt .
+COPY service/requirements.txt .
 RUN pip install --no-cache-dir --user -r requirements.txt
 
 # Stage 2: Runtime
@@ -30,7 +30,7 @@ RUN apt-get update && \
 COPY --from=builder /root/.local /root/.local
 
 # Copy application code
-COPY . ./service
+COPY service/ ./service
 
 # Make sure scripts in .local are usable
 ENV PATH=/root/.local/bin:$PATH
