@@ -10,13 +10,14 @@ data:
       evaluation_interval: 15s
 
     scrape_configs:
-      # AI Requirement Tool
+      # AI Requirement Tool (has native /metrics endpoint)
       - job_name: 'ai-requirement-tool'
         static_configs:
           - targets: ['ai-tool-service:80']
         metrics_path: /metrics
 
-      # AI SRE Observability Service
+      # AI SRE Observability Service (aggregates metrics from all instrumented services)
+      # This is the central metrics endpoint that Prometheus should scrape
       - job_name: 'ai-sre-observability'
         static_configs:
           - targets: ['ai-sre-observability.default.svc.cluster.local:8080']
@@ -24,26 +25,8 @@ data:
         scrape_interval: 15s
         scrape_timeout: 10s
 
-      # AI Market Studio Backend
-      - job_name: 'ai-market-studio'
-        static_configs:
-          - targets: ['ai-market-studio.default.svc.cluster.local:8000']
-        metrics_path: /metrics
-        scrape_interval: 15s
-        scrape_timeout: 10s
+      # Note: ai-market-studio, rag-service, and ai-gateway send metrics
+      # to ai-sre-observability service via SDK. They don't expose their own
+      # /metrics endpoints. Prometheus scrapes the aggregated metrics from
+      # ai-sre-observability instead.
 
-      # RAG Service
-      - job_name: 'rag-service'
-        static_configs:
-          - targets: ['rag-service.rag-service.svc.cluster.local:80']
-        metrics_path: /metrics
-        scrape_interval: 15s
-        scrape_timeout: 10s
-
-      # AI Gateway Service
-      - job_name: 'ai-gateway'
-        static_configs:
-          - targets: ['ai-gateway.ai-gateway.svc.cluster.local:80']
-        metrics_path: /metrics
-        scrape_interval: 15s
-        scrape_timeout: 10s
