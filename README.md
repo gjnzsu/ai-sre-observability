@@ -46,9 +46,23 @@ The platform consists of five main layers:
 4. **Monitoring Layer** - Prometheus metrics exposure and Grafana dashboards
 5. **Infrastructure** - Kubernetes/GKE deployment
 
+## Repository Structure
+
+```
+ai-sre-observability/
+├── k8s/                        # Kubernetes manifests for all components
+│   ├── observability-service/  # Metrics aggregation service
+│   ├── prometheus/             # Metrics collection & storage
+│   └── grafana/                # Visualization & dashboards
+├── service/                    # Observability service source code
+├── sdk/                        # Python SDK for instrumenting services
+├── tests/                      # Test suites
+└── docs/                       # Architecture & design docs
+```
+
 ## Components
 
-### Observability Service
+### Observability Service (`service/`)
 FastAPI-based service that:
 - Aggregates metrics from multiple AI services
 - Exposes Prometheus-compatible `/metrics` endpoint
@@ -56,7 +70,9 @@ FastAPI-based service that:
 - Handles metric validation and storage
 - Calculates LLM costs based on token usage
 
-### SDK Library
+**Deployment:** See `k8s/observability-service/`
+
+### SDK Library (`sdk/`)
 Lightweight Python SDK for instrumenting AI services:
 - Simple `@track_llm_call` decorator for automatic tracking
 - Async batching client (5s interval)
@@ -64,13 +80,70 @@ Lightweight Python SDK for instrumenting AI services:
 - Type-safe metric definitions
 - Graceful degradation on failures
 
-### Grafana Dashboards
+**Installation:** `pip install -e sdk/`
+
+### Prometheus (`k8s/prometheus/`)
+Time-series database for metrics collection:
+- Scrapes metrics from all instrumented services
+- 15-second scrape interval
+- Configurable retention period
+- External access for querying
+
+**Access:** http://136.113.33.154:9090
+
+### Grafana Dashboards (`k8s/grafana/`)
 Pre-configured dashboards for:
 - **Service Overview** - Health, HTTP metrics, error rates
 - **LLM Cost & Usage** - Cost tracking by provider/model, token usage
 - **Request Tracing** - Latency heatmaps, trace search, success rates
 
+**Access:** http://136.114.77.0 (admin / newpassword123)
+
 ## Quick Start
+
+### Deploy the Complete Observability Stack
+
+```bash
+# Deploy Prometheus (metrics collection)
+kubectl apply -f k8s/prometheus/
+
+# Deploy Observability Service (metrics aggregation)
+kubectl apply -f k8s/observability-service/
+
+# Deploy Grafana (visualization)
+kubectl apply -f k8s/grafana/
+```
+
+### Instrument Your Service
+
+1. Install the SDK:
+   ```bash
+   pip install git+https://github.com/gjnzsu/ai-sre-observability.git#subdirectory=sdk
+   ```
+
+2. Add the decorator to your LLM calls:
+   ```python
+   from ai_sre_observability_sdk import track_llm_call
+
+   @track_llm_call(
+       service_name="my-service",
+       provider="openai",
+       model="gpt-4"
+   )
+   async def call_llm(prompt: str) -> str:
+       # Your LLM call here
+       return response
+   ```
+
+3. Configure the SDK:
+   ```python
+   import os
+   os.environ["OBSERVABILITY_SERVICE_URL"] = "http://ai-sre-observability.default.svc.cluster.local:8080"
+   ```
+
+4. Add your service to Prometheus scrape config in `k8s/prometheus/prometheus-config.yaml`
+
+For detailed deployment instructions, see `k8s/README.md`.
 
 For detailed architecture and design specifications, refer to `docs/superpowers/specs/2026-04-18-ai-sre-observability-design.md`.
 

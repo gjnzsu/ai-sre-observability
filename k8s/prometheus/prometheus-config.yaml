@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: default
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+
+    scrape_configs:
+      # AI Requirement Tool
+      - job_name: 'ai-requirement-tool'
+        static_configs:
+          - targets: ['ai-tool-service:80']
+        metrics_path: /metrics
+
+      # AI SRE Observability Service
+      - job_name: 'ai-sre-observability'
+        static_configs:
+          - targets: ['ai-sre-observability.default.svc.cluster.local:8080']
+        metrics_path: /metrics
+        scrape_interval: 15s
+        scrape_timeout: 10s
+
+      # AI Market Studio Backend
+      - job_name: 'ai-market-studio'
+        static_configs:
+          - targets: ['ai-market-studio.default.svc.cluster.local:8000']
+        metrics_path: /metrics
+        scrape_interval: 15s
+        scrape_timeout: 10s
+
+      # RAG Service
+      - job_name: 'rag-service'
+        static_configs:
+          - targets: ['rag-service.rag-service.svc.cluster.local:80']
+        metrics_path: /metrics
+        scrape_interval: 15s
+        scrape_timeout: 10s
+
+      # AI Gateway Service
+      - job_name: 'ai-gateway'
+        static_configs:
+          - targets: ['ai-gateway.ai-gateway.svc.cluster.local:80']
+        metrics_path: /metrics
+        scrape_interval: 15s
+        scrape_timeout: 10s
