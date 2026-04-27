@@ -27,8 +27,8 @@ class MetricsRegistry:
             registry=self.registry
         )
 
-        self.llm_cost_usd_total = Counter(
-            'llm_cost_usd_total',
+        self.llm_token_cost_usd_total = Counter(
+            'llm_token_cost_usd_total',
             'Total cost in USD for LLM requests',
             ['service', 'provider', 'model'],
             registry=self.registry
@@ -126,7 +126,7 @@ class MetricsRegistry:
             model: Model name
             cost_usd: Cost in USD
         """
-        self.llm_cost_usd_total.labels(
+        self.llm_token_cost_usd_total.labels(
             service=service,
             provider=provider,
             model=model
