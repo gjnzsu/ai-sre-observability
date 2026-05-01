@@ -1,8 +1,7 @@
 """Unit tests for SDK decorators and public API."""
 
-import asyncio
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 from sdk.ai_sre_observability.decorators import track_llm_call
 from sdk.ai_sre_observability import setup_observability, get_client

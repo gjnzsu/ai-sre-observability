@@ -1,12 +1,9 @@
 """Unit tests for SDK ObservabilityClient."""
 
-import asyncio
 import pytest
-from datetime import datetime
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import patch
 
 from sdk.ai_sre_observability.client import ObservabilityClient, LLMCallTracker
-from sdk.ai_sre_observability.models import MetricPayload
 
 
 @pytest.mark.asyncio

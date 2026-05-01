@@ -4,7 +4,6 @@ import os
 import tempfile
 from pathlib import Path
 
-import pytest
 import yaml
 
 from service.config import load_pricing_config
@@ -14,22 +13,26 @@ def test_load_pricing_config():
     """Test loading pricing config from YAML file."""
     # Create temporary YAML file with pricing data
     pricing_data = {
-        "openai": {
-            "gpt-4": {
+        "models": [
+            {
+                "provider": "openai",
+                "model": "gpt-4",
                 "input_price_per_million": 30.0,
                 "output_price_per_million": 60.0
             },
-            "gpt-3.5-turbo": {
+            {
+                "provider": "openai",
+                "model": "gpt-3.5-turbo",
                 "input_price_per_million": 0.5,
                 "output_price_per_million": 1.5
-            }
-        },
-        "deepseek": {
-            "deepseek-chat": {
+            },
+            {
+                "provider": "deepseek",
+                "model": "deepseek-chat",
                 "input_price_per_million": 0.14,
                 "output_price_per_million": 0.28
             }
-        }
+        ]
     }
 
     # Create temp file
@@ -45,10 +48,10 @@ def test_load_pricing_config():
         assert "openai" in config
         assert "deepseek" in config
         assert "gpt-4" in config["openai"]
-        assert config["openai"]["gpt-4"]["input_price_per_million"] == 30.0
-        assert config["openai"]["gpt-4"]["output_price_per_million"] == 60.0
+        assert config["openai"]["gpt-4"]["prompt"] == 30.0
+        assert config["openai"]["gpt-4"]["completion"] == 60.0
         assert "deepseek-chat" in config["deepseek"]
-        assert config["deepseek"]["deepseek-chat"]["input_price_per_million"] == 0.14
+        assert config["deepseek"]["deepseek-chat"]["prompt"] == 0.14
     finally:
         # Clean up temp file
         os.unlink(temp_path)
@@ -58,3 +61,21 @@ def test_load_pricing_config_file_not_found():
     """Test loading non-existent config returns empty dict."""
     config = load_pricing_config("/nonexistent/path/to/config.yaml")
     assert config == {}
+
+
+def test_k8s_pricing_config_includes_gpt54(tmp_path):
+    """Test deployed pricing config includes GPT-5.4 cost data."""
+    configmap_path = (
+        Path(__file__).resolve().parents[2]
+        / "k8s"
+        / "observability-service"
+        / "configmap.yaml"
+    )
+    configmap = yaml.safe_load(configmap_path.read_text(encoding="utf-8"))
+    pricing_path = tmp_path / "pricing.yaml"
+    pricing_path.write_text(configmap["data"]["pricing.yaml"], encoding="utf-8")
+
+    config = load_pricing_config(str(pricing_path))
+
+    assert config["openai"]["gpt-5.4"]["prompt"] == 2.50
+    assert config["openai"]["gpt-5.4"]["completion"] == 15.00

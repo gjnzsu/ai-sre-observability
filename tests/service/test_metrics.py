@@ -1,6 +1,5 @@
 """Tests for Prometheus metrics registry."""
 
-import pytest
 from service.metrics import MetricsRegistry
 
 
@@ -78,7 +77,7 @@ def test_track_llm_cost():
     )
 
     # Verify the counter was incremented
-    metric = registry.llm_cost_usd_total
+    metric = registry.llm_token_cost_usd_total
     samples = list(metric.collect())[0].samples
 
     # Find the sample with our labels
@@ -92,4 +91,3 @@ def test_track_llm_cost():
             break
 
     assert found, "Expected metric sample not found"
-

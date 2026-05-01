@@ -1,7 +1,6 @@
 """End-to-end integration tests for AI SRE Observability Platform."""
 
 import asyncio
-import time
 from datetime import datetime
 
 import pytest

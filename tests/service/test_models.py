@@ -1,6 +1,4 @@
-import pytest
-from datetime import datetime
-from service.models import MetricIngestRequest, LLMCallData
+from service.models import MetricIngestRequest
 
 def test_metric_ingest_request_valid():
     """Test valid metric ingest request"""

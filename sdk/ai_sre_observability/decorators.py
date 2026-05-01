@@ -1,7 +1,7 @@
 """Decorators for tracking LLM calls."""
 
 import functools
-from typing import Any, Callable, Dict
+from typing import Any, Callable
 
 
 def track_llm_call(provider: str, model: str):

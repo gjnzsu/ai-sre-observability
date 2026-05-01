@@ -4,7 +4,7 @@ import pytest
 from datetime import datetime
 from unittest.mock import AsyncMock, patch
 
-from sdk.ai_sre_observability.models import LLMCallMetric, MetricPayload
+from sdk.ai_sre_observability.models import MetricPayload
 from sdk.ai_sre_observability.transport import AsyncTransport
 
 

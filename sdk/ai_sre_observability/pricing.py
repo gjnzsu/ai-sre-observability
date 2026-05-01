@@ -13,6 +13,10 @@ PRICING = {
         "input": 0.15,  # $0.15 per 1M input tokens
         "output": 0.60,  # $0.60 per 1M output tokens
     },
+    "gpt-5.4": {
+        "input": 2.50,  # $2.50 per 1M input tokens
+        "output": 15.00,  # $15.00 per 1M output tokens
+    },
     "deepseek-chat": {
         "input": 0.14,  # $0.14 per 1M input tokens
         "output": 0.28,  # $0.28 per 1M output tokens
