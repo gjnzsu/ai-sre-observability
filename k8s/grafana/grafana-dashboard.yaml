@@ -42,7 +42,7 @@ data:
           "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
           "id": 1,
           "options": {"colorMode": "background", "graphMode": "none", "justifyMode": "center", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "value_and_name"},
-          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "up{job=\"ai-requirement-tool\"}", "legendFormat": "Service Health"}],
+          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "min(up{job=\"ai-sre-observability\"})", "legendFormat": "Observability Health"}],
           "title": "Service Health",
           "type": "stat"
         },
@@ -52,8 +52,8 @@ data:
           "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
           "id": 2,
           "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
-          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "sum(rate(http_requests_total[5m]))", "legendFormat": "Total RPS"}],
-          "title": "Request Rate",
+          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "sum(rate(llm_requests_total[5m])) or vector(0)", "legendFormat": "LLM RPS"}],
+          "title": "LLM Request Rate",
           "type": "stat"
         },
         {
@@ -62,8 +62,8 @@ data:
           "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
           "id": 3,
           "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
-          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "sum(rate(http_requests_total{status=~\"2..\"}[5m])) / sum(rate(http_requests_total[5m]))", "legendFormat": "Success Rate"}],
-          "title": "Success Rate",
+          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "sum(increase(llm_requests_total{status=\"success\"}[1h])) / sum(increase(llm_requests_total[1h]))", "legendFormat": "LLM Success Rate"}],
+          "title": "LLM Success Rate",
           "type": "stat"
         },
         {
@@ -72,8 +72,8 @@ data:
           "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
           "id": 4,
           "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
-          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m]))", "legendFormat": "Error Rate"}],
-          "title": "Error Rate (5xx)",
+          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "sum(rate(llm_requests_total{status!=\"success\"}[5m])) or vector(0)", "legendFormat": "LLM Error Rate"}],
+          "title": "LLM Error Rate",
           "type": "stat"
         },
         {
@@ -82,8 +82,8 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 0, "y": 4},
           "id": 5,
           "options": {"legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom"}, "tooltip": {"mode": "multi"}},
-          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "rate(http_requests_total[2m])", "legendFormat": "{{method}} {{endpoint}} - {{status}}"}],
-          "title": "HTTP Request Rate by Endpoint",
+          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "sum(rate(llm_requests_total[5m])) by (service, provider, model, status)", "legendFormat": "{{service}} {{provider}}/{{model}} - {{status}}"}],
+          "title": "LLM Request Rate by Service",
           "type": "timeseries"
         },
         {
@@ -92,8 +92,8 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 12, "y": 4},
           "id": 6,
           "options": {"legend": {"calcs": ["mean"], "displayMode": "list", "placement": "bottom"}, "tooltip": {"mode": "multi"}},
-          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "sum(rate(http_requests_total{status=~\"5..\"}[5m])) by (endpoint) / sum(rate(http_requests_total[5m])) by (endpoint)", "legendFormat": "{{endpoint}}"}],
-          "title": "Error Rate by Endpoint",
+          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "1 - (sum(increase(llm_requests_total{status=\"success\"}[1h])) by (service, provider, model) / sum(increase(llm_requests_total[1h])) by (service, provider, model))", "legendFormat": "{{service}} {{provider}}/{{model}}"}],
+          "title": "LLM Error Ratio by Service",
           "type": "timeseries"
         },
         {
@@ -103,10 +103,10 @@ data:
           "id": 7,
           "options": {"legend": {"calcs": ["mean", "max"], "displayMode": "table", "placement": "bottom"}, "tooltip": {"mode": "multi"}},
           "targets": [
-            {"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[2m])) by (le, endpoint))", "legendFormat": "p95 {{endpoint}}"},
-            {"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "B", "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[2m])) by (le, endpoint))", "legendFormat": "p50 {{endpoint}}"}
+            {"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "histogram_quantile(0.95, sum(increase(llm_request_duration_seconds_bucket[1h])) by (le, service, provider, model))", "legendFormat": "p95 {{service}} {{provider}}/{{model}}"},
+            {"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "B", "expr": "histogram_quantile(0.50, sum(increase(llm_request_duration_seconds_bucket[1h])) by (le, service, provider, model))", "legendFormat": "p50 {{service}} {{provider}}/{{model}}"}
           ],
-          "title": "HTTP Request Latency (p50 / p95)",
+          "title": "LLM Request Latency (p50 / p95)",
           "type": "timeseries"
         }
       ]
@@ -228,7 +228,7 @@ data:
           "gridPos": {"h": 4, "w": 6, "x": 0, "y": 0},
           "id": 1,
           "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
-          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p95 Latency"}],
+          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "histogram_quantile(0.95, sum(increase(llm_request_duration_seconds_bucket[1h])) by (le))", "legendFormat": "p95 Latency"}],
           "title": "p95 Latency",
           "type": "stat"
         },
@@ -238,7 +238,7 @@ data:
           "gridPos": {"h": 4, "w": 6, "x": 6, "y": 0},
           "id": 2,
           "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
-          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))", "legendFormat": "p50 Latency"}],
+          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "histogram_quantile(0.50, sum(increase(llm_request_duration_seconds_bucket[1h])) by (le))", "legendFormat": "p50 Latency"}],
           "title": "p50 Latency",
           "type": "stat"
         },
@@ -248,7 +248,7 @@ data:
           "gridPos": {"h": 4, "w": 6, "x": 12, "y": 0},
           "id": 3,
           "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
-          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "sum(rate(http_requests_total{status=~\"2..\"}[5m])) / sum(rate(http_requests_total[5m]))", "legendFormat": "Success Rate"}],
+          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "sum(increase(llm_requests_total{status=\"success\"}[1h])) / sum(increase(llm_requests_total[1h]))", "legendFormat": "Success Rate"}],
           "title": "Success Rate",
           "type": "stat"
         },
@@ -258,7 +258,7 @@ data:
           "gridPos": {"h": 4, "w": 6, "x": 18, "y": 0},
           "id": 4,
           "options": {"colorMode": "value", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": {"calcs": ["lastNotNull"], "fields": "", "values": false}, "textMode": "auto"},
-          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "sum(rate(http_requests_total[5m]))", "legendFormat": "Request Rate"}],
+          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "sum(rate(llm_requests_total[5m])) or vector(0)", "legendFormat": "Request Rate"}],
           "title": "Request Rate",
           "type": "stat"
         },
@@ -268,8 +268,8 @@ data:
           "gridPos": {"h": 12, "w": 24, "x": 0, "y": 4},
           "id": 5,
           "options": {"calculate": false, "cellGap": 2, "color": {"exponent": 0.5, "fill": "dark-orange", "mode": "scheme", "reverse": false, "scale": "exponential", "scheme": "Spectral", "steps": 128}, "filterValues": {"le": 1e-9}, "legend": {"show": true}, "tooltip": {"show": true}},
-          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "sum(rate(http_request_duration_seconds_bucket[2m])) by (le, endpoint)", "format": "heatmap", "legendFormat": "{{endpoint}}"}],
-          "title": "Request Latency Heatmap",
+          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "sum(increase(llm_request_duration_seconds_bucket[1h])) by (le, service, model)", "format": "heatmap", "legendFormat": "{{service}} {{model}}"}],
+          "title": "LLM Request Latency Heatmap",
           "type": "heatmap"
         },
         {
@@ -279,11 +279,11 @@ data:
           "id": 6,
           "options": {"legend": {"calcs": ["mean", "max", "min"], "displayMode": "table", "placement": "bottom"}, "tooltip": {"mode": "multi"}},
           "targets": [
-            {"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, endpoint))", "legendFormat": "p99 {{endpoint}}"},
-            {"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "B", "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, endpoint))", "legendFormat": "p95 {{endpoint}}"},
-            {"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "C", "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, endpoint))", "legendFormat": "p50 {{endpoint}}"}
+            {"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "histogram_quantile(0.99, sum(increase(llm_request_duration_seconds_bucket[1h])) by (le, service, provider, model))", "legendFormat": "p99 {{service}} {{provider}}/{{model}}"},
+            {"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "B", "expr": "histogram_quantile(0.95, sum(increase(llm_request_duration_seconds_bucket[1h])) by (le, service, provider, model))", "legendFormat": "p95 {{service}} {{provider}}/{{model}}"},
+            {"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "C", "expr": "histogram_quantile(0.50, sum(increase(llm_request_duration_seconds_bucket[1h])) by (le, service, provider, model))", "legendFormat": "p50 {{service}} {{provider}}/{{model}}"}
           ],
-          "title": "Latency Percentiles by Endpoint",
+          "title": "Latency Percentiles by Service",
           "type": "timeseries"
         },
         {
@@ -292,8 +292,8 @@ data:
           "gridPos": {"h": 8, "w": 12, "x": 12, "y": 16},
           "id": 7,
           "options": {"legend": {"calcs": ["sum"], "displayMode": "table", "placement": "bottom"}, "tooltip": {"mode": "multi"}},
-          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "sum(rate(http_requests_total[5m])) by (status, endpoint)", "legendFormat": "{{status}} - {{endpoint}}"}],
-          "title": "Request Rate by Status Code",
+          "targets": [{"datasource": {"type": "prometheus", "uid": "prometheus"}, "refId": "A", "expr": "sum(rate(llm_requests_total[5m])) by (status, service, provider, model)", "legendFormat": "{{status}} - {{service}} {{provider}}/{{model}}"}],
+          "title": "Request Rate by Status",
           "type": "timeseries"
         }
       ]

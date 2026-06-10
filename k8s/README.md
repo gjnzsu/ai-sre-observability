@@ -35,12 +35,10 @@ Metrics collection and time-series database.
 - `prometheus-service.yaml` - LoadBalancer service (external access)
 - `prometheus-config.yaml` - Scrape configuration for all monitored services
 
-**Monitored Services:**
-- ai-requirement-tool
+**Scrape Targets:**
 - ai-sre-observability
-- ai-market-studio
-- rag-service
-- ai-gateway
+
+Instrumented application services such as ai-market-studio, rag-service, and ai-gateway send LLM telemetry to the observability service through the SDK. Prometheus scrapes the aggregated `/metrics` endpoint from ai-sre-observability.
 
 **Access:**
 - External: http://136.113.33.154:9090
@@ -56,13 +54,13 @@ Visualization platform with pre-configured dashboards.
 - `grafana-dashboard.yaml` - Dashboard definitions (ConfigMaps)
 
 **Dashboards:**
-1. **Service Overview** - Health, HTTP metrics, error rates
+1. **Service Overview** - Observability service health, LLM request rate, LLM success/error ratio
 2. **LLM Cost & Usage** - Cost tracking by provider/model, token usage
-3. **Request Tracing** - Latency heatmaps, trace search, success rates
+3. **Request Tracing** - LLM latency heatmaps, percentile trends, success rates
 
 **Access:**
 - External: http://136.114.77.0
-- Credentials: admin / newpassword123
+- Credentials: use the `grafana-secrets` Kubernetes secret or the locally generated admin password file when rotating credentials.
 
 ## Deployment
 
