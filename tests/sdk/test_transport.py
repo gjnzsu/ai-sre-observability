@@ -2,7 +2,7 @@
 
 import pytest
 from datetime import datetime
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from sdk.ai_sre_observability.models import MetricPayload
 from sdk.ai_sre_observability.transport import AsyncTransport
@@ -29,13 +29,42 @@ async def test_send_metric_success():
     )
 
     with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
-        mock_post.return_value.status_code = 200
+        mock_post.return_value = MagicMock(status_code=200)
         mock_post.return_value.json.return_value = {"status": "ok"}
 
         result = await transport.send_metric(metric)
 
         assert result is True
         mock_post.assert_called_once()
+
+    await transport.close()
+
+
+@pytest.mark.asyncio
+async def test_send_metric_includes_api_key_header():
+    """Test API key is sent as X-API-Key when configured."""
+    transport = AsyncTransport(
+        observability_url="http://localhost:8000",
+        api_key="test-api-key"
+    )
+
+    metric = MetricPayload(
+        service_name="test-service",
+        metric_type="llm_call",
+        trace_id="test-trace-auth",
+        timestamp=datetime.utcnow(),
+        data={"provider": "openai"}
+    )
+
+    with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
+        mock_post.return_value = MagicMock(status_code=200)
+        mock_post.return_value.json.return_value = {"status": "ok"}
+
+        result = await transport.send_metric(metric)
+
+        assert result is True
+        _, kwargs = mock_post.call_args
+        assert kwargs["headers"] == {"X-API-Key": "test-api-key"}
 
     await transport.close()
 
@@ -80,7 +109,7 @@ async def test_send_batch():
     ]
 
     with patch("httpx.AsyncClient.post", new_callable=AsyncMock) as mock_post:
-        mock_post.return_value.status_code = 200
+        mock_post.return_value = MagicMock(status_code=200)
         mock_post.return_value.json.return_value = {"status": "ok"}
 
         results = await transport.send_batch(metrics)

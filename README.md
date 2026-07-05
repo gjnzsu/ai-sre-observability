@@ -26,7 +26,7 @@ This platform enables comprehensive monitoring of AI services through:
 **Metrics Collected:**
 - `llm_requests_total` - Total LLM API requests by service, model, provider, status
 - `llm_tokens_total` - Token usage (prompt, completion, total) by service, model, provider
-- `llm_cost_usd_total` - Cumulative cost in USD by service, model, provider
+- `llm_token_cost_usd_total` - Cumulative cost in USD by service, model, provider
 - `llm_request_duration_seconds` - Request latency histogram
 
 **Deployment Date:** 2026-04-23
@@ -141,7 +141,15 @@ kubectl apply -f k8s/grafana/
    os.environ["OBSERVABILITY_SERVICE_URL"] = "http://ai-sre-observability.default.svc.cluster.local:8080"
    ```
 
-4. Add your service to Prometheus scrape config in `k8s/prometheus/prometheus-config.yaml`
+4. Optional: configure API key authentication:
+   ```python
+   import os
+   os.environ["OBSERVABILITY_API_KEY"] = "your-api-key"
+   ```
+
+   The observability service only requires `X-API-Key` when `OBSERVABILITY_API_KEYS` is configured. Leaving `OBSERVABILITY_API_KEYS` unset keeps existing services such as `ai-market-studio` and `ai-requirement-tool` working without changes.
+
+5. Add your service to Prometheus scrape config in `k8s/prometheus/prometheus-config.yaml`
 
 For detailed deployment instructions, see `k8s/README.md`.
 

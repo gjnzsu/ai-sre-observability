@@ -21,8 +21,8 @@ from ai_sre_observability import setup_observability, track_llm_call
 
 # Initialize the SDK
 setup_observability(
-    api_url="http://localhost:8000",
-    service_name="my-ai-service"
+    service_name="my-ai-service",
+    observability_url="http://localhost:8000"
 )
 
 # Track LLM calls with decorator
@@ -53,16 +53,40 @@ Initialize the observability client.
 
 ```python
 setup_observability(
-    api_url: str,
     service_name: str,
-    timeout: float = 30.0
+    observability_url: str,
+    batch_interval: float = 5.0,
+    timeout: float = 5.0,
+    api_key: str | None = None
 )
 ```
 
 **Parameters:**
-- `api_url`: Backend API endpoint
 - `service_name`: Name of your service
-- `timeout`: Request timeout in seconds (default: 30.0)
+- `observability_url`: Backend API endpoint
+- `batch_interval`: Batch flush interval in seconds (default: 5.0)
+- `timeout`: Request timeout in seconds (default: 5.0)
+- `api_key`: Optional API key for authenticated ingestion. If omitted, the SDK reads `OBSERVABILITY_API_KEY`.
+
+### Authentication
+
+API key authentication is opt-in on the observability service. Existing clients keep working when the service does not set `OBSERVABILITY_API_KEYS`.
+
+When authentication is enabled, configure clients with either an environment variable:
+
+```bash
+export OBSERVABILITY_API_KEY="your-api-key"
+```
+
+Or pass it explicitly:
+
+```python
+setup_observability(
+    service_name="my-ai-service",
+    observability_url="http://ai-sre-observability.default.svc.cluster.local:8080",
+    api_key="your-api-key"
+)
+```
 
 ### @track_llm_call
 
@@ -95,8 +119,8 @@ Low-level client for manual tracking.
 from ai_sre_observability import ObservabilityClient
 
 client = ObservabilityClient(
-    api_url="http://localhost:8000",
-    service_name="my-service"
+    service_name="my-service",
+    observability_url="http://localhost:8000"
 )
 
 # Track LLM call manually

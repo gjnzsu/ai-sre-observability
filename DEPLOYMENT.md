@@ -35,6 +35,7 @@ http://ai-sre-observability.default.svc.cluster.local:8080
 - **Ingest Metrics**: `POST /ingest`
   - Accepts LLM metrics from SDK clients
   - Content-Type: application/json
+  - Optional authentication: `X-API-Key` header when `OBSERVABILITY_API_KEYS` is configured
 
 ## Deployment Steps
 
@@ -98,13 +99,45 @@ The service uses a ConfigMap for pricing configuration (`ai-sre-observability-co
 - OpenAI GPT-4o-mini: $0.15/$0.60 per million tokens (input/output)
 - DeepSeek Chat: $0.14/$0.28 per million tokens (input/output)
 
+### Optional API Key Authentication
+
+Authentication is disabled by default for backward compatibility. If `OBSERVABILITY_API_KEYS` is unset or empty, existing instrumented services such as `ai-market-studio` and `ai-requirement-tool` can keep sending metrics without changes.
+
+To enable authentication without interrupting existing workflows:
+
+1. Add `OBSERVABILITY_API_KEY` to each instrumented application deployment.
+2. Roll out and verify those applications are sending `X-API-Key`.
+3. Set `OBSERVABILITY_API_KEYS` on the observability service to a comma-separated allowlist.
+
+Example service configuration:
+
+```yaml
+env:
+- name: OBSERVABILITY_API_KEYS
+  valueFrom:
+    secretKeyRef:
+      name: ai-sre-observability-auth
+      key: api-keys
+```
+
+Example client configuration:
+
+```yaml
+env:
+- name: OBSERVABILITY_API_KEY
+  valueFrom:
+    secretKeyRef:
+      name: ai-sre-observability-auth
+      key: api-key
+```
+
 ## Monitoring
 
 The service exposes Prometheus metrics at `/metrics` including:
 
 - `llm_requests_total`: Total LLM API requests by provider, model, and service
 - `llm_tokens_total`: Total tokens processed (input/output)
-- `llm_cost_usd_total`: Total cost in USD
+- `llm_token_cost_usd_total`: Total cost in USD
 - `llm_request_duration_seconds`: Request duration histogram
 - `llm_errors_total`: Total errors by provider, model, and error type
 - `http_requests_total`: HTTP request counter
@@ -119,7 +152,8 @@ Applications can send metrics to the service using the Python SDK:
 from ai_sre_observability import ObservabilityClient
 
 client = ObservabilityClient(
-    service_url="http://ai-sre-observability.default.svc.cluster.local:8080"
+    service_name="my-service",
+    observability_url="http://ai-sre-observability.default.svc.cluster.local:8080"
 )
 
 # Metrics are automatically sent after LLM calls

@@ -1,9 +1,10 @@
 """Tests for FastAPI main application."""
 
+import os
+from datetime import datetime
+
 import pytest
 from fastapi.testclient import TestClient
-from datetime import datetime
-import os
 
 
 @pytest.fixture
@@ -36,6 +37,7 @@ def client(mock_pricing_config, tmp_path):
 
     # Set environment variable
     os.environ['PRICING_CONFIG_PATH'] = str(config_file)
+    os.environ.pop('OBSERVABILITY_API_KEYS', None)
 
     # Import after setting env var
     from service.main import app
@@ -43,6 +45,25 @@ def client(mock_pricing_config, tmp_path):
     # Use TestClient with context manager to trigger startup/shutdown events
     with TestClient(app) as test_client:
         yield test_client
+
+
+@pytest.fixture
+def auth_client(mock_pricing_config, tmp_path):
+    """Create test client with API key authentication enabled."""
+    config_file = tmp_path / "pricing.yaml"
+    import yaml
+    with open(config_file, 'w') as f:
+        yaml.dump(mock_pricing_config, f)
+
+    os.environ['PRICING_CONFIG_PATH'] = str(config_file)
+    os.environ['OBSERVABILITY_API_KEYS'] = "test-api-key, rotated-key"
+
+    from service.main import app
+
+    with TestClient(app) as test_client:
+        yield test_client
+
+    os.environ.pop('OBSERVABILITY_API_KEYS', None)
 
 
 def test_health_endpoint(client):
@@ -106,6 +127,64 @@ def test_ingest_llm_call(client):
     assert "trace_id" in data
     assert data["status"] == "success"
     assert data["trace_id"] == "trace-123"
+
+
+def test_ingest_without_configured_api_key_keeps_legacy_clients_working(client):
+    """Test /ingest remains open when no API keys are configured."""
+    payload = {
+        "service_name": "ai-market-studio",
+        "metric_type": "llm_call",
+        "trace_id": "legacy-trace-123",
+        "timestamp": datetime.utcnow().isoformat(),
+        "data": {
+            "provider": "openai",
+            "model": "gpt-4o",
+            "prompt_tokens": 100,
+            "completion_tokens": 50,
+            "duration_seconds": 1.5,
+            "status": "success"
+        }
+    }
+
+    response = client.post("/ingest", json=payload)
+
+    assert response.status_code == 200
+    assert response.json()["trace_id"] == "legacy-trace-123"
+
+
+def test_ingest_requires_api_key_when_configured(auth_client):
+    """Test /ingest rejects missing or invalid API keys when configured."""
+    payload = {
+        "service_name": "ai-market-studio",
+        "metric_type": "llm_call",
+        "trace_id": "auth-trace-123",
+        "timestamp": datetime.utcnow().isoformat(),
+        "data": {
+            "provider": "openai",
+            "model": "gpt-4o",
+            "prompt_tokens": 100,
+            "completion_tokens": 50,
+            "duration_seconds": 1.5,
+            "status": "success"
+        }
+    }
+
+    missing_key_response = auth_client.post("/ingest", json=payload)
+    invalid_key_response = auth_client.post(
+        "/ingest",
+        json=payload,
+        headers={"X-API-Key": "wrong-key"}
+    )
+    valid_key_response = auth_client.post(
+        "/ingest",
+        json=payload,
+        headers={"X-API-Key": "test-api-key"}
+    )
+
+    assert missing_key_response.status_code == 401
+    assert invalid_key_response.status_code == 401
+    assert valid_key_response.status_code == 200
+    assert valid_key_response.json()["trace_id"] == "auth-trace-123"
 
 
 def test_services_endpoint(client):

@@ -67,6 +67,7 @@ class ObservabilityClient:
         observability_url: str,
         batch_interval: float = 5.0,
         timeout: float = 5.0,
+        api_key: Optional[str] = None,
     ):
         """Initialize observability client.
 
@@ -75,11 +76,12 @@ class ObservabilityClient:
             observability_url: URL of the observability platform
             batch_interval: Interval for batch sending in seconds (default: 5.0)
             timeout: Request timeout in seconds (default: 5.0)
+            api_key: Optional API key for authenticated ingestion
         """
         self.service_name = service_name
         self.observability_url = observability_url
         self.batch_interval = batch_interval
-        self._transport = AsyncTransport(observability_url, timeout)
+        self._transport = AsyncTransport(observability_url, timeout, api_key)
         self._batch: List[MetricPayload] = []
         self._lock = Lock()
         self._batch_task: Optional[asyncio.Task] = None
@@ -87,6 +89,13 @@ class ObservabilityClient:
 
     async def start(self):
         """Start the batch sender background task."""
+        if not self._running:
+            self._running = True
+            self._batch_task = asyncio.create_task(self._batch_sender())
+            logger.info("ObservabilityClient started")
+
+    def start_background(self):
+        """Start the batch sender from an already-running event loop."""
         if not self._running:
             self._running = True
             self._batch_task = asyncio.create_task(self._batch_sender())

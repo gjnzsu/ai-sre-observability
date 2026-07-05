@@ -5,7 +5,7 @@ import os
 from datetime import datetime, timedelta
 from typing import Dict, Any
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.responses import Response
 from prometheus_client import generate_latest
 
@@ -40,12 +40,28 @@ cost_calculator: CostCalculator = None
 metrics_received_count: int = 0
 last_reset_time: datetime = datetime.utcnow()
 service_metrics: Dict[str, Dict[str, Any]] = {}
+configured_api_keys: set[str] = set()
+
+
+def _load_api_keys() -> set[str]:
+    """Load configured API keys from a comma-separated environment variable."""
+    raw_keys = os.getenv("OBSERVABILITY_API_KEYS", "")
+    return {key.strip() for key in raw_keys.split(",") if key.strip()}
+
+
+def _verify_ingest_api_key(api_key: str | None) -> None:
+    """Require a valid API key only when authentication is configured."""
+    if not configured_api_keys:
+        return
+
+    if api_key not in configured_api_keys:
+        raise HTTPException(status_code=401, detail="Invalid or missing API key")
 
 
 @app.on_event("startup")
 async def startup_event():
     """Initialize application on startup."""
-    global metrics_registry, cost_calculator, last_reset_time
+    global metrics_registry, cost_calculator, last_reset_time, configured_api_keys
 
     logger.info("Starting AI SRE Observability Platform...")
 
@@ -61,6 +77,7 @@ async def startup_event():
     metrics_registry = MetricsRegistry()
     cost_calculator = CostCalculator(pricing_config)
     last_reset_time = datetime.utcnow()
+    configured_api_keys = _load_api_keys()
 
     logger.info("Application started successfully")
 
@@ -108,7 +125,10 @@ async def metrics_endpoint():
 
 
 @app.post("/ingest", response_model=MetricIngestResponse)
-async def ingest_metrics(request: MetricIngestRequest):
+async def ingest_metrics(
+    request: MetricIngestRequest,
+    x_api_key: str | None = Header(default=None)
+):
     """Ingest metrics from SDK clients.
 
     Args:
@@ -118,6 +138,8 @@ async def ingest_metrics(request: MetricIngestRequest):
         Ingestion response with status
     """
     global metrics_received_count, service_metrics
+
+    _verify_ingest_api_key(x_api_key)
 
     try:
         service_name = request.service_name

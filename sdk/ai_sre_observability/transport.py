@@ -1,6 +1,7 @@
 """Async HTTP transport for sending metrics to the observability platform."""
 
 import logging
+import os
 from typing import List, Optional
 
 import httpx
@@ -13,15 +14,22 @@ logger = logging.getLogger(__name__)
 class AsyncTransport:
     """Async HTTP transport for sending metrics."""
 
-    def __init__(self, observability_url: str, timeout: float = 5.0):
+    def __init__(
+        self,
+        observability_url: str,
+        timeout: float = 5.0,
+        api_key: Optional[str] = None,
+    ):
         """Initialize async transport.
 
         Args:
             observability_url: Base URL of the observability platform
             timeout: Request timeout in seconds (default: 5.0)
+            api_key: Optional API key for authenticated ingestion
         """
         self.observability_url = observability_url.rstrip("/")
         self.timeout = timeout
+        self.api_key = api_key or os.getenv("OBSERVABILITY_API_KEY")
         self._client: Optional[httpx.AsyncClient] = None
 
     def _get_client(self) -> httpx.AsyncClient:
@@ -45,9 +53,11 @@ class AsyncTransport:
         """
         try:
             client = self._get_client()
+            headers = {"X-API-Key": self.api_key} if self.api_key else None
             response = await client.post(
                 f"{self.observability_url}/ingest",
                 json=metric.model_dump(mode="json"),
+                headers=headers,
             )
             response.raise_for_status()
             logger.debug(f"Metric sent successfully: {metric.trace_id}")
