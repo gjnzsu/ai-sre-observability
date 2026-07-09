@@ -164,12 +164,22 @@ async def ingest_metrics(
 
         # Process based on metric type
         if metric_type == "llm_call" and isinstance(data, LLMCallData):
+            ownership = {
+                "consumer": data.consumer,
+                "application": data.application,
+                "project": data.project,
+                "team": data.team,
+                "use_case": data.use_case,
+                "feature": data.feature,
+            }
+
             # Track LLM request
             metrics_registry.track_llm_request(
                 service=service_name,
                 provider=data.provider,
                 model=data.model,
-                status=data.status
+                status=data.status,
+                ownership=ownership
             )
 
             # Track tokens
@@ -178,21 +188,24 @@ async def ingest_metrics(
                 provider=data.provider,
                 model=data.model,
                 token_type="prompt",
-                count=data.prompt_tokens
+                count=data.prompt_tokens,
+                ownership=ownership
             )
             metrics_registry.track_llm_tokens(
                 service=service_name,
                 provider=data.provider,
                 model=data.model,
                 token_type="completion",
-                count=data.completion_tokens
+                count=data.completion_tokens,
+                ownership=ownership
             )
             metrics_registry.track_llm_tokens(
                 service=service_name,
                 provider=data.provider,
                 model=data.model,
                 token_type="total",
-                count=data.prompt_tokens + data.completion_tokens
+                count=data.prompt_tokens + data.completion_tokens,
+                ownership=ownership
             )
 
             # Track duration
@@ -200,7 +213,8 @@ async def ingest_metrics(
                 service=service_name,
                 provider=data.provider,
                 model=data.model,
-                duration=data.duration_seconds
+                duration=data.duration_seconds,
+                ownership=ownership
             )
 
             # Calculate and track cost
@@ -214,7 +228,8 @@ async def ingest_metrics(
                 service=service_name,
                 provider=data.provider,
                 model=data.model,
-                cost_usd=cost
+                cost_usd=cost,
+                ownership=ownership
             )
 
             # Track errors if present
@@ -223,7 +238,8 @@ async def ingest_metrics(
                     service=service_name,
                     provider=data.provider,
                     model=data.model,
-                    error_type=data.error_type
+                    error_type=data.error_type,
+                    ownership=ownership
                 )
 
         elif metric_type == "http_request" and isinstance(data, HTTPRequestData):
@@ -243,8 +259,13 @@ async def ingest_metrics(
                 duration=data.duration_seconds
             )
 
-        elif metric_type == "business_metric" and isinstance(data, BusinessMetricData):
-            # Business metrics are custom - log for now
+        elif metric_type in {"business_metric", "counter"} and isinstance(data, BusinessMetricData):
+            metrics_registry.track_business_metric(
+                service=service_name,
+                metric_name=data.metric_name,
+                value=data.value,
+                labels=data.labels,
+            )
             logger.info(f"Received business metric: {data.metric_name} = {data.value}")
 
         else:

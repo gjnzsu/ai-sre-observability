@@ -7,6 +7,15 @@ from typing import Dict, Any
 class MetricsRegistry:
     """Central registry for all Prometheus metrics."""
 
+    LLM_OWNERSHIP_LABELS = [
+        'consumer',
+        'application',
+        'project',
+        'team',
+        'use_case',
+        'feature',
+    ]
+
     def __init__(self):
         """Initialize all Prometheus metrics."""
         # Create a custom registry for this instance
@@ -16,28 +25,28 @@ class MetricsRegistry:
         self.llm_requests_total = Counter(
             'llm_requests_total',
             'Total number of LLM API requests',
-            ['service', 'provider', 'model', 'status'],
+            ['service', *self.LLM_OWNERSHIP_LABELS, 'provider', 'model', 'status'],
             registry=self.registry
         )
 
         self.llm_tokens_total = Counter(
             'llm_tokens_total',
             'Total number of tokens processed',
-            ['service', 'provider', 'model', 'token_type'],
+            ['service', *self.LLM_OWNERSHIP_LABELS, 'provider', 'model', 'token_type'],
             registry=self.registry
         )
 
         self.llm_token_cost_usd_total = Counter(
             'llm_token_cost_usd_total',
             'Total cost in USD for LLM requests',
-            ['service', 'provider', 'model'],
+            ['service', *self.LLM_OWNERSHIP_LABELS, 'provider', 'model'],
             registry=self.registry
         )
 
         self.llm_request_duration_seconds = Histogram(
             'llm_request_duration_seconds',
             'Duration of LLM requests in seconds',
-            ['service', 'provider', 'model'],
+            ['service', *self.LLM_OWNERSHIP_LABELS, 'provider', 'model'],
             buckets=[0.5, 1.0, 2.0, 5.0, 10.0, 30.0],
             registry=self.registry
         )
@@ -45,7 +54,7 @@ class MetricsRegistry:
         self.llm_errors_total = Counter(
             'llm_errors_total',
             'Total number of LLM errors',
-            ['service', 'provider', 'model', 'error_type'],
+            ['service', *self.LLM_OWNERSHIP_LABELS, 'provider', 'model', 'error_type'],
             registry=self.registry
         )
 
@@ -72,6 +81,25 @@ class MetricsRegistry:
             registry=self.registry
         )
 
+        # Business Attribution Metrics
+        self.business_metric_total = Counter(
+            'business_metric_total',
+            'Total custom business metric events',
+            [
+                'service',
+                'metric_name',
+                'application',
+                'project',
+                'team',
+                'use_case',
+                'feature',
+                'model',
+                'status',
+                'tool_used',
+            ],
+            registry=self.registry
+        )
+
         # System Health Metrics
         self.service_up = Gauge(
             'service_up',
@@ -84,7 +112,21 @@ class MetricsRegistry:
         self._services: Dict[str, Dict[str, Any]] = {}
 
     # LLM Tracking Methods
-    def track_llm_request(self, service: str, provider: str, model: str, status: str) -> None:
+    def _ownership_labels(self, labels: Dict[str, str]) -> Dict[str, str]:
+        """Return low-cardinality ownership labels with safe defaults."""
+        return {
+            label: labels.get(label) or "unknown"
+            for label in self.LLM_OWNERSHIP_LABELS
+        }
+
+    def track_llm_request(
+        self,
+        service: str,
+        provider: str,
+        model: str,
+        status: str,
+        ownership: Dict[str, str] | None = None,
+    ) -> None:
         """Track an LLM request.
 
         Args:
@@ -95,12 +137,21 @@ class MetricsRegistry:
         """
         self.llm_requests_total.labels(
             service=service,
+            **self._ownership_labels(ownership or {}),
             provider=provider,
             model=model,
             status=status
         ).inc()
 
-    def track_llm_tokens(self, service: str, provider: str, model: str, token_type: str, count: int) -> None:
+    def track_llm_tokens(
+        self,
+        service: str,
+        provider: str,
+        model: str,
+        token_type: str,
+        count: int,
+        ownership: Dict[str, str] | None = None,
+    ) -> None:
         """Track LLM token usage.
 
         Args:
@@ -112,12 +163,20 @@ class MetricsRegistry:
         """
         self.llm_tokens_total.labels(
             service=service,
+            **self._ownership_labels(ownership or {}),
             provider=provider,
             model=model,
             token_type=token_type
         ).inc(count)
 
-    def track_llm_cost(self, service: str, provider: str, model: str, cost_usd: float) -> None:
+    def track_llm_cost(
+        self,
+        service: str,
+        provider: str,
+        model: str,
+        cost_usd: float,
+        ownership: Dict[str, str] | None = None,
+    ) -> None:
         """Track LLM cost.
 
         Args:
@@ -128,11 +187,19 @@ class MetricsRegistry:
         """
         self.llm_token_cost_usd_total.labels(
             service=service,
+            **self._ownership_labels(ownership or {}),
             provider=provider,
             model=model
         ).inc(cost_usd)
 
-    def track_llm_duration(self, service: str, provider: str, model: str, duration: float) -> None:
+    def track_llm_duration(
+        self,
+        service: str,
+        provider: str,
+        model: str,
+        duration: float,
+        ownership: Dict[str, str] | None = None,
+    ) -> None:
         """Track LLM request duration.
 
         Args:
@@ -143,11 +210,19 @@ class MetricsRegistry:
         """
         self.llm_request_duration_seconds.labels(
             service=service,
+            **self._ownership_labels(ownership or {}),
             provider=provider,
             model=model
         ).observe(duration)
 
-    def track_llm_error(self, service: str, provider: str, model: str, error_type: str) -> None:
+    def track_llm_error(
+        self,
+        service: str,
+        provider: str,
+        model: str,
+        error_type: str,
+        ownership: Dict[str, str] | None = None,
+    ) -> None:
         """Track LLM error.
 
         Args:
@@ -158,6 +233,7 @@ class MetricsRegistry:
         """
         self.llm_errors_total.labels(
             service=service,
+            **self._ownership_labels(ownership or {}),
             provider=provider,
             model=model,
             error_type=error_type
@@ -194,6 +270,27 @@ class MetricsRegistry:
             endpoint=endpoint,
             method=method
         ).observe(duration)
+
+    def track_business_metric(
+        self,
+        service: str,
+        metric_name: str,
+        value: float,
+        labels: Dict[str, str],
+    ) -> None:
+        """Track a low-cardinality business metric event."""
+        self.business_metric_total.labels(
+            service=service,
+            metric_name=metric_name,
+            application=labels.get("application", "unknown"),
+            project=labels.get("project", "unknown"),
+            team=labels.get("team", "unknown"),
+            use_case=labels.get("use_case", "unknown"),
+            feature=labels.get("feature", "unknown"),
+            model=labels.get("model", "unknown"),
+            status=labels.get("status", "unknown"),
+            tool_used=labels.get("tool_used", "none"),
+        ).inc(value)
 
     # System Health Methods
     def set_service_health(self, service: str, is_up: bool) -> None:

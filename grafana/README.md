@@ -37,11 +37,34 @@ Dashboard for monitoring LLM API costs, usage patterns, and performance metrics.
 8. **Cost Rate** - Real-time cost accumulation rate
 
 **Metrics Used:**
-- `llm_cost_usd_total` - Total cost counter
+- `llm_token_cost_usd_total` - Total cost counter
 - `llm_requests_total` - Total LLM requests counter
 - `llm_tokens_total` - Token usage counter
 - `llm_request_duration_seconds` - Request duration histogram
 - `llm_errors_total` - Error counter
+
+### AI Market Studio Cost Attribution (`ai-market-studio-cost-attribution.json`)
+
+Dashboard for joining AI Market Studio business attribution with gateway-sourced LLM token/cost metrics.
+
+**Panels:**
+1. **LLM Cost (24h)** - Token cost from `llm_token_cost_usd_total{service="ai-gateway-service", consumer="ai-market-studio"}`
+2. **Tokens (24h)** - Token volume from `llm_tokens_total{service="ai-gateway-service", consumer="ai-market-studio"}`
+3. **Attributed AI Requests (24h)** - Business-attributed request volume
+4. **Non-success Attributed Requests** - Failed or non-success business-attributed requests
+5. **Attributed Requests by Use Case** - FX data query, advisory report, dashboard generation
+6. **Attributed Requests by Feature and Model** - Feature/model split for adoption and optimization
+7. **Technical Cost Rate by Source** - Technical cost trend grouped by service, consumer, and model for duplicate-source review
+8. **Technical Token Rate by Source** - Technical token trend grouped by service, consumer, and model for duplicate-source review
+9. **Attributed Request Rate by Use Case** - Business demand trend
+10. **Attributed Requests by Feature and Status** - Feature health and completion status
+
+**Metrics Used:**
+- `llm_token_cost_usd_total` - Token cost counter
+- `llm_tokens_total` - Token usage counter
+- `business_metric_total{metric_name="ai_cost_attribution_requests_total"}` - Business attribution request counter
+
+**Counting rule:** use gateway-sourced `llm_token_cost_usd_total{service="ai-gateway-service", consumer="ai-market-studio"}` for AI Market Studio product cost. Use `business_metric_total` for business request attribution only. Do not add backend technical LLM metrics and gateway technical LLM metrics together for an app-specific cost total.
 
 ### Request Tracing (`request-tracing.json`)
 

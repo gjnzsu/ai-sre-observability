@@ -110,6 +110,12 @@ def test_ingest_llm_call(client):
         "data": {
             "provider": "openai",
             "model": "gpt-4o",
+            "consumer": "ai-market-studio",
+            "application": "ai-market-studio",
+            "project": "fx-market-insight",
+            "team": "markets",
+            "use_case": "fx-data-query",
+            "feature": "query-result-generation",
             "prompt_tokens": 100,
             "completion_tokens": 50,
             "duration_seconds": 1.5,
@@ -127,6 +133,46 @@ def test_ingest_llm_call(client):
     assert "trace_id" in data
     assert data["status"] == "success"
     assert data["trace_id"] == "trace-123"
+
+    metrics_response = client.get("/metrics")
+    assert 'service="test-service"' in metrics_response.text
+    assert 'consumer="ai-market-studio"' in metrics_response.text
+    assert 'application="ai-market-studio"' in metrics_response.text
+    assert 'use_case="fx-data-query"' in metrics_response.text
+    assert 'feature="query-result-generation"' in metrics_response.text
+
+
+def test_ingest_counter_business_metric(client):
+    """Test /ingest accepts SDK counter metrics for business attribution."""
+    payload = {
+        "service_name": "ai-market-studio",
+        "metric_type": "counter",
+        "trace_id": "trace-business-123",
+        "timestamp": datetime.utcnow().isoformat(),
+        "data": {
+            "metric_name": "ai_cost_attribution_requests_total",
+            "value": 1,
+            "labels": {
+                "application": "ai-market-studio",
+                "project": "fx-market-insight",
+                "team": "markets",
+                "use_case": "fx-data-query",
+                "feature": "query-result-generation",
+                "model": "gpt-4o",
+                "status": "success",
+                "tool_used": "collect_market_context",
+            },
+        },
+    }
+
+    response = client.post("/ingest", json=payload)
+
+    assert response.status_code == 200
+    assert response.json()["trace_id"] == "trace-business-123"
+
+    metrics_response = client.get("/metrics")
+    assert "business_metric_total" in metrics_response.text
+    assert 'use_case="fx-data-query"' in metrics_response.text
 
 
 def test_ingest_without_configured_api_key_keeps_legacy_clients_working(client):

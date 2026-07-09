@@ -28,7 +28,7 @@
         },
         "targets": [
           {
-            "expr": "sum(llm_cost_usd_total)",
+            "expr": "sum(llm_token_cost_usd_total)",
             "refId": "A"
           }
         ],
@@ -82,7 +82,7 @@
         },
         "targets": [
           {
-            "expr": "sum by (provider)(llm_cost_usd_total)",
+            "expr": "sum by (provider)(llm_token_cost_usd_total)",
             "refId": "A",
             "legendFormat": "{{provider}}"
           }
@@ -117,7 +117,7 @@
         },
         "targets": [
           {
-            "expr": "sum by (model)(llm_cost_usd_total)",
+            "expr": "sum by (model)(llm_token_cost_usd_total)",
             "refId": "A",
             "legendFormat": "{{model}}"
           }
@@ -166,9 +166,9 @@
         },
         "targets": [
           {
-            "expr": "rate(llm_requests_total[5m])",
+            "expr": "sum(rate(llm_requests_total[5m])) by (provider, model, status)",
             "refId": "A",
-            "legendFormat": "{{provider}} - {{model}}"
+            "legendFormat": "{{provider}} - {{model}} - {{status}}"
           }
         ],
         "yaxes": [
@@ -208,7 +208,7 @@
         },
         "targets": [
           {
-            "expr": "rate(llm_tokens_total[5m])",
+            "expr": "sum(rate(llm_tokens_total[5m])) by (provider, model, token_type)",
             "refId": "A",
             "legendFormat": "{{token_type}} - {{provider}} - {{model}}"
           }
@@ -292,7 +292,7 @@
         },
         "targets": [
           {
-            "expr": "rate(llm_errors_total[5m])",
+            "expr": "sum(rate(llm_errors_total[5m])) by (provider, model, error_type)",
             "refId": "A",
             "legendFormat": "{{provider}} - {{model}} - {{error_type}}"
           }
@@ -334,7 +334,7 @@
         },
         "targets": [
           {
-            "expr": "rate(llm_cost_usd_total[5m])",
+            "expr": "sum(rate(llm_token_cost_usd_total[5m])) by (provider, model)",
             "refId": "A",
             "legendFormat": "{{provider}} - {{model}}"
           }

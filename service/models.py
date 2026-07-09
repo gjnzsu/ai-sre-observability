@@ -7,6 +7,12 @@ class LLMCallData(BaseModel):
     """LLM call metric data"""
     provider: str = Field(..., description="LLM provider (e.g., openai, anthropic)")
     model: str = Field(..., description="Model name (e.g., gpt-4o, claude-3-opus)")
+    consumer: str = Field("unknown", description="Upstream consumer service")
+    application: str = Field("unknown", description="Business application identifier")
+    project: str = Field("unknown", description="Business project identifier")
+    team: str = Field("unknown", description="Owning team identifier")
+    use_case: str = Field("unknown", description="Business use case identifier")
+    feature: str = Field("unknown", description="Product feature identifier")
     prompt_tokens: int = Field(..., ge=0, description="Number of prompt tokens")
     completion_tokens: int = Field(..., ge=0, description="Number of completion tokens")
     duration_seconds: float = Field(..., ge=0, description="Duration of the call in seconds")
